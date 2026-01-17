@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Routine Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.onerror = function (msg, url, line) {
+            alert("Error: " + msg + "\nLine: " + line);
+            return false;
+        };
+    </script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- ホーム画面 -->
+        <div id="home-screen">
+            <h1>Select Routine</h1>
+            <div id="routine-list">
+                <!-- ここにルーティンリストが生成される -->
+            </div>
+
+            <button id="create-routine-btn" class="floating-fab">+ New</button>
+
+            <p style="color:#666; font-size:12px; margin-top:30px; text-align: center;">
+                データは端末内に保存されます。<br>
+                (Offline capable)
+            </p>
+        </div>
+
+        <!-- ルーティン作成モーダル -->
+        <div id="create-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="modal-title">Create Routine</h2>
+                <input type="hidden" id="edit-routine-id">
+                <input type="text" id="new-routine-name" placeholder="ルーティン名" class="full-width-input">
+
+                <!-- Image Upload -->
+                <div style="margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:5px; color:#aaa; font-size:14px;">画像を選択 (任意)</label>
+                    <input type="file" id="routine-image-input" accept="image/*" style="color:#ccc;">
+                    <div id="image-preview-container" style="margin-top:10px; display:none;">
+                        <img id="image-preview" src=""
+                            style="max-width:100%; max-height:200px; border-radius:8px; object-fit:cover;">
+                        <button onclick="clearImage()"
+                            style="margin-top:5px; background:#444; color:white; border:none; padding:5px 10px; border-radius:4px;">削除</button>
+                    </div>
+                </div>
+
+                <div style="margin: 10px 0; display: flex; align-items: center; gap: 8px; color: #ccc;">
+                    <input type="checkbox" id="auto-update-estimates" checked style="width: auto; margin: 0;">
+                    <label for="auto-update-estimates" style="font-size: 14px;">完了後に時間を自動更新する</label>
+                </div>
+
+                <div id="new-task-list" class="task-list-container">
+                    <!-- タスク入力欄 -->
+                </div>
+
+                <button id="add-task-btn" onclick="addTaskInput()" class="btn-secondary">+ Add Task</button>
+
+                <div class="modal-actions">
+                    <button onclick="closeModal()" class="btn-cancel">Cancel</button>
+                    <button onclick="saveNewRoutine()" class="btn-save">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- アクティブ画面（実行中） -->
+        <div id="active-screen" class="hidden">
+            <h2 id="current-task-name">Task Name</h2>
+            <img id="current-task-image" src="" alt="Task Image"
+                style="max-width: 100%; max-height: 300px; display: none; margin: 0 auto 20px auto; border-radius: 8px;">
+            <div id="timer">00:00</div>
+            <button id="next-btn" class="btn-large-primary">Next Task</button>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="result-screen" class="hidden">
+            <h1>Result</h1>
+
+            <div class="chart-container">
+                <canvas id="resultChart"></canvas>
+            </div>
+
+            <div id="result-list">
+                <!-- 結果詳細 -->
+            </div>
+            <button onclick="goHome()" class="btn-large-secondary">Back to Home</button>
+        </div>
+
+        <!-- 汎用確認・アラートモーダル -->
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content text-center">
+                <h2 id="confirm-title">Confirm</h2>
+                <p id="confirm-message">Message</p>
+                <div class="modal-actions">
+                    <button id="confirm-cancel-btn" class="btn-cancel">Cancel</button>
+                    <button id="confirm-ok-btn" class="btn-danger">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
