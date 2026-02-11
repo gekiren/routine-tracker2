@@ -4,109 +4,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Routine Tracker</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <title>習慣カウンター</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#121212">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        window.onerror = function (msg, url, line) {
-            alert("Error: " + msg + "\nLine: " + line);
-            return false;
-        };
-    </script>
 </head>
 
 <body>
-    <div id="app">
-        <!-- ホーム画面 -->
-        <div id="home-screen">
-            <h1>Select Routine</h1>
-            <div id="routine-list">
-                <!-- ここにルーティンリストが生成される -->
+    <div class="app-container">
+        <header>
+            <h1>習慣カウンター</h1>
+            <button id="stats-btn" class="icon-btn" aria-label="統計">
+                📊
+            </button>
+        </header>
+
+        <main id="grid-container" class="grid-container">
+            <!-- Items will be injected here -->
+            <button id="add-btn" class="add-card" aria-label="項目を追加">
+                <span>+</span>
+            </button>
+        </main>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="add-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h2>新しい習慣を追加</h2>
+            <input type="text" id="new-item-name" placeholder="例: 水を飲む" autocomplete="off">
+            <div class="color-picker">
+                <button class="color-btn" style="--bg: linear-gradient(135deg, #FF6B6B, #EE5253)"
+                    data-color="red"></button>
+                <button class="color-btn" style="--bg: linear-gradient(135deg, #48DBFB, #0ABDE3)"
+                    data-color="blue"></button>
+                <button class="color-btn" style="--bg: linear-gradient(135deg, #1DD1A1, #10AC84)"
+                    data-color="green"></button>
+                <button class="color-btn" style="--bg: linear-gradient(135deg, #FECA57, #FF9F43)"
+                    data-color="yellow"></button>
+                <button class="color-btn" style="--bg: linear-gradient(135deg, #A29BFE, #6C5CE7)"
+                    data-color="purple"></button>
             </div>
-
-            <button id="create-routine-btn" class="floating-fab">+ New</button>
-
-            <p style="color:#666; font-size:12px; margin-top:30px; text-align: center;">
-                データは端末内に保存されます。<br>
-                (Offline capable)
-            </p>
-        </div>
-
-        <!-- ルーティン作成モーダル -->
-        <div id="create-modal" class="modal hidden">
-            <div class="modal-content">
-                <h2 id="modal-title">Create Routine</h2>
-                <input type="hidden" id="edit-routine-id">
-                <input type="text" id="new-routine-name" placeholder="ルーティン名" class="full-width-input">
-
-                <!-- Image Upload -->
-                <div style="margin-bottom: 15px;">
-                    <label style="display:block; margin-bottom:5px; color:#aaa; font-size:14px;">画像を選択 (任意)</label>
-                    <input type="file" id="routine-image-input" accept="image/*" style="color:#ccc;">
-                    <div id="image-preview-container" style="margin-top:10px; display:none;">
-                        <img id="image-preview" src=""
-                            style="max-width:100%; max-height:200px; border-radius:8px; object-fit:cover;">
-                        <button onclick="clearImage()"
-                            style="margin-top:5px; background:#444; color:white; border:none; padding:5px 10px; border-radius:4px;">削除</button>
-                    </div>
-                </div>
-
-                <div style="margin: 10px 0; display: flex; align-items: center; gap: 8px; color: #ccc;">
-                    <input type="checkbox" id="auto-update-estimates" checked style="width: auto; margin: 0;">
-                    <label for="auto-update-estimates" style="font-size: 14px;">完了後に時間を自動更新する</label>
-                </div>
-
-                <div id="new-task-list" class="task-list-container">
-                    <!-- タスク入力欄 -->
-                </div>
-
-                <button id="add-task-btn" onclick="addTaskInput()" class="btn-secondary">+ Add Task</button>
-
-                <div class="modal-actions">
-                    <button onclick="closeModal()" class="btn-cancel">Cancel</button>
-                    <button onclick="saveNewRoutine()" class="btn-save">Save</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- アクティブ画面（実行中） -->
-        <div id="active-screen" class="hidden">
-            <h2 id="current-task-name">Task Name</h2>
-            <img id="current-task-image" src="" alt="Task Image"
-                style="max-width: 100%; max-height: 300px; display: none; margin: 0 auto 20px auto; border-radius: 8px;">
-            <div id="timer">00:00</div>
-            <button id="next-btn" class="btn-large-primary">Next Task</button>
-        </div>
-
-        <!-- 結果画面 -->
-        <div id="result-screen" class="hidden">
-            <h1>Result</h1>
-
-            <div class="chart-container">
-                <canvas id="resultChart"></canvas>
-            </div>
-
-            <div id="result-list">
-                <!-- 結果詳細 -->
-            </div>
-            <button onclick="goHome()" class="btn-large-secondary">Back to Home</button>
-        </div>
-
-        <!-- 汎用確認・アラートモーダル -->
-        <div id="confirm-modal" class="modal hidden">
-            <div class="modal-content text-center">
-                <h2 id="confirm-title">Confirm</h2>
-                <p id="confirm-message">Message</p>
-                <div class="modal-actions">
-                    <button id="confirm-cancel-btn" class="btn-cancel">Cancel</button>
-                    <button id="confirm-ok-btn" class="btn-danger">OK</button>
-                </div>
+            <div class="modal-actions">
+                <button id="cancel-add" class="text-btn">キャンセル</button>
+                <button id="confirm-add" class="primary-btn">追加</button>
             </div>
         </div>
     </div>
-    <script src="app.js"></script>
+
+    <!-- Stats Modal -->
+    <div id="stats-modal" class="modal hidden">
+        <div class="modal-content glass" style="max-width: 400px;">
+            <h2>記録の統計</h2>
+
+            <!-- Date Navigation -->
+            <div class="date-nav">
+                <button id="prev-day" class="icon-btn-small">◀</button>
+                <p id="current-date" class="date-label">2026年X月X日</p>
+                <button id="next-day" class="icon-btn-small">▶</button>
+            </div>
+
+            <!-- Main Stats List -->
+            <div id="stats-view-main">
+                <ul id="stats-list" class="stats-list">
+                    <!-- Stats will be injected here -->
+                </ul>
+            </div>
+
+            <!-- Detail/Trend View (Hidden by default) -->
+            <div id="stats-view-detail" class="hidden">
+                <div class="detail-header">
+                    <button id="back-to-stats" class="text-btn-small">← 戻る</button>
+                    <h3 id="detail-item-name">項目名</h3>
+                </div>
+
+                <!-- Trend Navigation -->
+                <div class="date-nav" style="margin-bottom: 10px;">
+                    <button id="trend-prev" class="icon-btn-small">◀</button>
+                    <span id="trend-date-range" class="date-label" style="margin:0; font-size: 0.8rem;">期間</span>
+                    <button id="trend-next" class="icon-btn-small">▶</button>
+                </div>
+
+                <!-- Simple CSS Bar Chart -->
+                <div id="trend-chart" class="trend-chart">
+                    <!-- Bars will be injected here -->
+                </div>
+            </div>
+
+            <button id="close-stats" class="text-btn">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Edit Count Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h2>回数の修正</h2>
+            <p id="edit-item-name" class="date-label">項目名</p>
+            <div class="counter-control">
+                <button id="decrease-count" class="circle-btn">-</button>
+                <span id="edit-count-value" class="count-display">0</span>
+                <button id="increase-count" class="circle-btn">+</button>
+            </div>
+            <div class="modal-actions">
+                <button id="delete-item" class="text-btn" style="color: var(--danger-color);">削除</button>
+                <button id="cancel-edit" class="text-btn">キャンセル</button>
+                <button id="save-edit" class="primary-btn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
+        }
+    </script>
 </body>
 
 </html>
